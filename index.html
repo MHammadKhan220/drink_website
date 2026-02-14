@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELIXIR - Premium Drinks & Cocktails</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        * { scroll-behavior: smooth; }
+        body { font-family: 'Manrope', sans-serif; }
+        ::selection { background: #171717; color: white; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .drink-card:hover .drink-image {
+            transform: scale(1.08) rotate(2deg);
+        }
+        
+        .drink-card:hover .drink-overlay {
+            opacity: 1;
+        }
+        
+        .category-tab.active {
+            background: #171717;
+            color: white;
+        }
+        
+        .cart-badge {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .modal.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .modal.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body class="bg-[#FDFDFC] text-neutral-900">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-[rgba(253,253,252,0.8)] backdrop-blur-md">
+        <div class="max-w-[1800px] mx-auto px-6 md:px-12 py-4 md:py-6">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-neutral-900 rounded-full flex items-center justify-center">
+                        <i data-lucide="wine" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight">ELIXIR</span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#menu" class="text-sm font-medium hover:text-neutral-600 transition-colors">Menu</a>
+                    <a href="#categories" class="text-sm font-medium hover:text-neutral-600 transition-colors">Categories</a>
+                    <a href="#specials" class="text-sm font-medium hover:text-neutral-600 transition-colors">Specials</a>
+                    <a href="#about" class="text-sm font-medium hover:text-neutral-600 transition-colors">About</a>
+                    <a href="#contact" class="text-sm font-medium hover:text-neutral-600 transition-colors">Contact</a>
+                </div>
+                
+                <!-- Right Actions -->
+                <div class="flex items-center gap-4">
+                    <!-- Search -->
+                    <button onclick="toggleSearch()" class="p-2 hover:bg-neutral-100 rounded-full transition-colors">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                    </button>
+                    
+                    <!-- Cart -->
+                    <button onclick="toggleCart()" class="p-2 hover:bg-neutral-100 rounded-full transition-colors relative">
+                        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                        <span id="cart-count" class="cart-badge absolute -top-1 -right-1 w-5 h-5 bg-neutral-900 text-white text-xs rounded-full flex items-center justify-center hidden">0</span>
+                    </button>
+                    
+                    <!-- Reservation Button -->
+                    <button onclick="toggleReservation()" class="hidden md:block bg-neutral-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-neutral-700 transition-all hover:scale-105 hover:shadow-lg">
+                        Reserve
+                    </button>
+                    
+                    <!-- Mobile Menu -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 z-40 bg-[#FDFDFC] hidden">
+        <div class="pt-24 px-6">
+            <div class="flex flex-col gap-6">
+                <a href="#menu" onclick="toggleMobileMenu()" class="text-2xl font-semibold">Menu</a>
+                <a href="#categories" onclick="toggleMobileMenu()" class="text-2xl font-semibold">Categories</a>
+                <a href="#specials" onclick="toggleMobileMenu()" class="text-2xl font-semibold">Specials</a>
+                <a href="#about" onclick="toggleMobileMenu()" class="text-2xl font-semibold">About</a>
+                <a href="#contact" onclick="toggleMobileMenu()" class="text-2xl font-semibold">Contact</a>
+                <button onclick="toggleReservation(); toggleMobileMenu();" class="mt-4 bg-neutral-900 text-white px-6 py-3 rounded-full text-lg font-semibold">
+                    Make Reservation
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search Modal -->
+    <div id="search-modal" class="modal hidden fixed inset-0 z-50 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm flex items-start justify-center pt-32">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-2xl mx-4 shadow-2xl">
+            <div class="flex items-center gap-4 mb-6">
+                <i data-lucide="search" class="w-6 h-6 text-neutral-400"></i>
+                <input type="text" id="search-input" placeholder="Search drinks..." class="flex-1 text-xl outline-none" oninput="searchDrinks(this.value)">
+                <button onclick="toggleSearch()" class="p-2 hover:bg-neutral-100 rounded-full">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="search-results" class="max-h-96 overflow-y-auto">
+                <p class="text-neutral-500 text-center py-8">Type to search for drinks...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white z-50 shadow-2xl transform translate-x-full transition-transform duration-300">
+        <div class="h-full flex flex-col">
+            <div class="p-6 border-b border-neutral-200 flex items-center justify-between">
+                <h3 class="text-xl font-bold">Your Cart</h3>
+                <button onclick="toggleCart()" class="p-2 hover:bg-neutral-100 rounded-full">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6">
+                <p class="text-neutral-500 text-center py-8">Your cart is empty</p>
+            </div>
+            <div class="p-6 border-t border-neutral-200">
+                <div class="flex justify-between mb-4">
+                    <span class="font-semibold">Total:</span>
+                    <span id="cart-total" class="font-bold text-xl">$0.00</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-neutral-900 text-white py-3 rounded-full font-semibold hover:bg-neutral-700 transition-colors">
+                    Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reservation Modal -->
+    <div id="reservation-modal" class="modal hidden fixed inset-0 z-50 bg-[rgba(0,0,0,0.5)] backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold">Make a Reservation</h3>
+                <button onclick="toggleReservation()" class="p-2 hover:bg-neutral-100 rounded-full">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="reservation-form" onsubmit="submitReservation(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Name</label>
+                    <input type="text" required class="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" required class="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Phone</label>
+                    <input type="tel" required class="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Date</label>
+                        <input type="date" required class="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Time</label>
+                        <select required class="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent outline-none">
+                            <option value="">Select time</option>
+                            <option>5:00 PM</option>
+                            <option>6:00 PM</option>
+                            <option>7:00 PM</option>
+                            <option>8:00 PM</option>
+                            <option>9:00 PM</option>
+                            <option>10:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Number of Guests</label>
+                    <select required class="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-transparent outline-none">
+                        <option value="">Select guests</option>
+                        <option>1 Guest</option>
+                        <option>2 Guests</option>
+                        <option>3-4 Guests</option>
+                        <option>5-6 Guests</option>
+                        <option>7+ Guests</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-neutral-900 text-white py-4 rounded-full font-semibold hover:bg-neutral-700 transition-all hover:scale-105 mt-6">
+                    Confirm Reservation
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Hero Section -->
+    <section class="mt-20 px-4 md:px-8 pt-10 md:pt-20">
+        <div class="max-w-[1800px] mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center min-h-[60vh] md:min-h-[90vh]">
+                <!-- Left Content -->
+                <div class="lg:col-span-5 reveal">
+                    <div class="inline-flex items-center gap-2 bg-[#111111] text-white px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider mb-6">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        Now Open
+                    </div>
+                    <h1 class="text-5xl md:text-6xl lg:text-7xl font-semibold leading-[1.05] tracking-tighter mb-6">
+                        Craft Your
+                        <span class="bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-500 bg-clip-text text-transparent"> Perfect </span>
+                        Moment
+                    </h1>
+                    <p class="text-lg md:text-xl text-neutral-500 font-medium leading-relaxed mb-8 max-w-lg">
+                        Discover an exquisite collection of handcrafted cocktails, premium spirits, and curated beverages for every occasion.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#menu" class="inline-flex items-center justify-center gap-2 bg-neutral-900 text-white px-8 py-4 rounded-full text-sm font-bold uppercase tracking-wide hover:bg-neutral-700 transition-all hover:scale-105 hover:shadow-lg">
+                            Explore Menu
+                            <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                        </a>
+                        <button onclick="toggleReservation()" class="inline-flex items-center justify-center gap-2 bg-white border-2 border-neutral-200 text-neutral-900 px-8 py-4 rounded-full text-sm font-bold uppercase tracking-wide hover:bg-neutral-50 hover:border-neutral-300 transition-all">
+                            Book Table
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Right Hero Image -->
+                <div class="lg:col-span-7 relative reveal" style="transition-delay: 200ms;">
+                    <div class="relative h-[400px] md:h-[600px] lg:h-[750px] rounded-[2rem] md:rounded-[3rem] overflow-hidden">
+                        <img src="https://picsum.photos/seed/cocktails-hero/1200/800" alt="Premium Cocktails" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                        
+                        <!-- Floating Card -->
+                        <div class="absolute bottom-6 left-6 right-6 md:bottom-10 md:left-10 md:right-auto">
+                            <div class="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl max-w-xs">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-neutral-900 rounded-full flex items-center justify-center">
+                                        <i data-lucide="star" class="w-6 h-6 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-lg">4.9 Rating</p>
+                                        <p class="text-sm text-neutral-500">2,500+ Reviews</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Featured Drinks -->
+    <section class="py-20 px-4 md:px-8">
+        <div class="max-w-[1800px] mx-auto">
+            <div class="text-center mb-16 reveal">
+                <p class="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-4">Featured Selection</p>
+                <h2 class="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tighter">Popular Picks</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="featured-drinks">
+                <!-- Drinks will be populated by JS -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- Categories Section -->
+    <section id="categories" class="py-20 px-4 md:px-8 bg-[#111111]">
+        <div class="max-w-[1800px] mx-auto">
+            <div class="text-center mb-16 reveal">
+                <p class="text-xs font-semibold uppercase tracking-widest text-neutral-400 mb-4">Browse By</p>
+                <h2 class="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tighter text-white">Categories</h2>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 reveal" style="transition-delay: 100ms;">
+                <button onclick="filterByCategory('cocktails')" class="group relative h-48 rounded-3xl overflow-hidden">
+                    <img src="https://picsum.photos/seed/cocktails-cat/400/400" alt="Cocktails" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                        <i data-lucide="wine" class="w-8 h-8 mb-2"></i>
+                        <span class="font-semibold">Cocktails</span>
+                    </div>
+                </button>
+                <button onclick="filterByCategory('spirits')" class="group relative h-48 rounded-3xl overflow-hidden">
+                    <img src="https://picsum.photos/seed/spirits-cat/400/400" alt="Spirits" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                        <i data-lucide="flask-conical" class="w-8 h-8 mb-2"></i>
+                        <span class="font-semibold">Spirits</span>
+                    </div>
+                </button>
+                <button onclick="filterByCategory('wine')" class="group relative h-48 rounded-3xl overflow-hidden">
+                    <img src="https://picsum.photos/seed/wine-cat/400/400" alt="Wine" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                        <i data-lucide="grape" class="w-8 h-8 mb-2"></i>
+                        <span class="font-semibold">Wine</span>
+                    </div>
+                </button>
+                <button onclick="filterByCategory('beer')" class="group relative h-48 rounded-3xl overflow-hidden">
+                    <img src="https://picsum.photos/seed/beer-cat/400/400" alt="Beer" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                        <i data-lucide="beer" class="w-8 h-8 mb-2"></i>
+                        <span class="font-semibold">Beer</span>
+                    </div>
+                </button>
+                <button onclick="filterByCategory('mocktails')" class="group relative h-48 rounded-3xl overflow-hidden">
+                    <img src="https://picsum.photos/seed/mocktails-cat/400/400" alt="Mocktails" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                        <i data-lucide="citrus" class="w-8 h-8 mb-2"></i>
+                        <span class="font-semibold">Mocktails</span>
+                    </div>
+                </button>
+                <button onclick="filterByCategory('coffee')" class="group relative h-48 rounded-3xl overflow-hidden">
+                    <img src="https://picsum.photos/seed/coffee-cat/400/400" alt="Coffee" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-black/20"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                        <i data-lucide="coffee" class="w-8 h-8 mb-2"></i>
+                        <span class="font-semibold">Coffee</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Menu Section -->
+    <section id="menu" class="py-20 px-4 md:px-8">
+        <div class="max-w-[1800px] mx-auto">
+            <div class="text-center mb-12 reveal">
+                <p class="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-4">Our Collection</p>
+                <h2 class="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tighter">Drink Menu</h2>
+            </div>
+            
+            <!-- Category Tabs -->
+            <div class="flex flex-wrap justify-center gap-2 mb-12 reveal" style="transition-delay: 100ms;">
+                <button onclick="filterByCategory('all')" class="category-tab active px-6 py-3 rounded-full text-sm font-semibold transition-all hover:bg-neutral-100">All Drinks</button>
+                <button onclick="filterByCategory('cocktails')" class="category-tab px-6 py-3 rounded-full text-sm font-semibold transition-all hover:bg-neutral-100">Cocktails</button>
+                <button onclick="filterByCategory('spirits')" class="category-tab px-6 py-3 rounded-full text-sm font-semibold transition-all hover:bg-neutral-100">Spirits</button>
+                <button onclick="filterByCategory('wine')" class="category-tab px-6 py-3 rounded-full text-sm font-semibold transition-all hover:bg-neutral-100">Wine</button>
+                <button onclick="filterByCategory('beer')" class="category-tab px-6 py-3 rounded-full text-sm font-semibold transition-all hover:bg-neutral-100">Beer</button>
+                <button onclick="filterByCategory('mocktails')" class="category-tab px-6 py-3 rounded-full text-sm font-semibold transition-all hover:bg-neutral-100">Mocktails</button>
+                <button onclick="filterByCategory('coffee')" class="category-tab px-6 py-3 rounded-full text-sm font-semibold transition-all hover:bg-neutral-100">Coffee</button>
+            </div>
+            
+            <!-- Drink Grid -->
+            <div id="menu-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 reveal" style="transition-delay: 200ms;">
+                <!-- Drinks will be populated by JS -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- Specials Section -->
+    <section id="specials" class="py-20 px-4 md:px-8">
+        <div class="max-w-[1800px] mx-auto">
+            <div class="bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 rounded-[2.5rem] md:rounded-[3.5rem] p-8 md:p-16 lg:p-24 relative overflow-hidden">
+                <!-- Ambient Light -->
+                <div class="absolute top-0 right-0 w-96 h-96 bg-amber-500/20 blur-[120px] pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/20 blur-[120px] pointer-events-none"></div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+                    <div class="reveal">
+                        <div class="inline-flex items-center gap-2 bg-amber-500/20 text-amber-400 px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider mb-6">
+                            <i data-lucide="zap" class="w-4 h-4"></i>
+                            Happy Hour
+                        </div>
+                        <h2 class="text-4xl md:text-5xl font-semibold tracking-tighter text-white mb-6">
+                            Daily Specials
+                        </h2>
+                        <p class="text-lg text-neutral-300 mb-8">
+                            Join us every day from 4 PM to 7 PM for exclusive deals on signature cocktails and premium spirits. Half-price on selected drinks!
+                        </p>
+                        
+                        <div class="space-y-4 mb-8">
+                            <div class="flex items-center justify-between bg-white/10 rounded-2xl p-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="sun" class="w-6 h-6 text-amber-400"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-white">Monday - Friday</p>
+                                        <p class="text-sm text-neutral-400">4:00 PM - 7:00 PM</p>
+                                    </div>
+                                </div>
+                                <span class="text-amber-400 font-bold">50% OFF</span>
+                            </div>
+                            <div class="flex items-center justify-between bg-white/10 rounded-2xl p-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                                        <i data-lucide="moon" class="w-6 h-6 text-purple-400"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-white">Saturday - Sunday</p>
+                                        <p class="text-sm text-neutral-400">3:00 PM - 6:00 PM</p>
+                                    </div>
+                                </div>
+                                <span class="text-purple-400 font-bold">2 FOR 1</span>
+                            </div>
+                        </div>
+                        
+                        <button onclick="toggleReservation()" class="inline-flex items-center gap-2 bg-white text-neutral-900 px-8 py-4 rounded-full text-sm font-bold uppercase tracking-wide hover:bg-neutral-100 transition-all hover:scale-105">
+                            Reserve Now
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="relative reveal" style="transition-delay: 200ms;">
+                        <div class="relative">
+                            <img src="https://picsum.photos/seed/happy-hour/600/700" alt="Happy Hour" class="w-full rounded-3xl">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-3xl"></div>
+                        </div>
+                        
+                        <!-- Floating Badge -->
+                        <div class="absolute -top-4 -right-4 w-24 h-24 bg-amber-500 rounded-full flex items-center justify-center float-animation">
+                            <div class="text-center text-white">
+                                <p class="text-xs font-bold">UP TO</p>
+                                <p class="text-2xl font-bold">50%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- About Section -->
+    <section id="about" class="py-20 px-4 md:px-8 bg-neutral-50">
+        <div class="max-w-[1800px] mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="order-2 lg:order-1 reveal">
+                    <div class="grid grid-cols-2 gap-4">
+                        <img src="https://picsum.photos/seed/bar-interior/400/500" alt="Bar Interior" class="rounded-3xl h-64 w-full object-cover">
+                        <img src="https://picsum.photos/seed/bartender/400/500" alt="Bartender" class="rounded-3xl h-64 w-full object-cover mt-8">
+                        <img src="https://picsum.photos/seed/drinks-collection/400/500" alt="Drinks Collection" class="rounded-3xl h-64 w-full object-cover -mt-8">
+                        <img src="https://picsum.photos/seed/lounge/400/500" alt="Lounge" class="rounded-3xl h-64 w-full object-cover">
+                    </div>
+                </div>
+                
+                <div class="order-1 lg:order-2 reveal" style="transition-delay: 200ms;">
+                    <p class="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-4">Our Story</p>
+                    <h2 class="text-4xl md:text-5xl font-semibold tracking-tighter mb-6">
+                        Crafting Moments Since 2015
+                    </h2>
+                    <p class="text-lg text-neutral-600 mb-6 leading-relaxed">
+                        ELIXIR was born from a passion for exceptional drinks and memorable experiences. Our expert mixologists source the finest ingredients from around the world to create unique flavor combinations.
+                    </p>
+                    <p class="text-lg text-neutral-600 mb-8 leading-relaxed">
+                        From classic cocktails reimagined to innovative new creations, every drink tells a story. We believe that the perfect drink is more than just a beverage—it's an experience to be savored.
+                    </p>
+                    
+                    <div class="grid grid-cols-3 gap-6 mb-8">
+                        <div class="text-center">
+                            <p class="text-3xl md:text-4xl font-bold text-neutral-900">50+</p>
+                            <p class="text-sm text-neutral-500">Signature Drinks</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-3xl md:text-4xl font-bold text-neutral-900">15k+</p>
+                            <p class="text-sm text-neutral-500">Happy Customers</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-3xl md:text-4xl font-bold text-neutral-900">9</p>
+                            <p class="text-sm text-neutral-500">Years Experience</p>
+                        </div>
+                    </div>
+                    
+                    <a href="#contact" class="inline-flex items-center gap-2 text-neutral-900 font-semibold hover:gap-4 transition-all">
+                        Learn More About Us
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Testimonials -->
+    <section class="py-20 px-4 md:px-8">
+        <div class="max-w-[1800px] mx-auto">
+            <div class="text-center mb-16 reveal">
+                <p class="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-4">Testimonials</p>
+                <h2 class="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tighter">What People Say</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 reveal" style="transition-delay: 100ms;">
+                <div class="bg-neutral-50 rounded-3xl p-8">
+                    <div class="flex items-center gap-1 mb-4">
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                    </div>
+                    <p class="text-lg text-neutral-700 mb-6">"The best cocktail bar in the city! Their signature Old Fashioned is absolutely divine. The ambiance is perfect for a romantic evening."</p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://picsum.photos/seed/person1/100/100" alt="Sarah" class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <p class="font-semibold">Sarah Johnson</p>
+                            <p class="text-sm text-neutral-500">Regular Customer</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-neutral-50 rounded-3xl p-8">
+                    <div class="flex items-center gap-1 mb-4">
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                    </div>
+                    <p class="text-lg text-neutral-700 mb-6">"Amazing selection of whiskey and the staff really knows their stuff. Happy hour deals are unbeatable. Highly recommend!"</p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://picsum.photos/seed/person2/100/100" alt="Mike" class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <p class="font-semibold">Michael Chen</p>
+                            <p class="text-sm text-neutral-500">Whiskey Enthusiast</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-neutral-50 rounded-3xl p-8">
+                    <div class="flex items-center gap-1 mb-4">
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 fill-amber-400 text-amber-400"></i>
+                    </div>
+                    <p class="text-lg text-neutral-700 mb-6">"Finally a place with great mocktails! The No-Jito is my favorite. Great atmosphere and friendly service every time."</p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://picsum.photos/seed/person3/100/100" alt="Emma" class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <p class="font-semibold">Emma Williams</p>
+                            <p class="text-sm text-neutral-500">Mocktail Lover</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 px-4 md:px-8">
+        <div class="max-w-[1800px] mx-auto">
+            <div class="bg-[#111111] rounded-[2.5rem] md:rounded-[3.5rem] p-8 md:p-16 lg:p-24 relative overflow-hidden">
+                <!-- Ambient Light -->
+                <div class="absolute top-0 left-1/3 w-96 h-96 bg-indigo-500/20 blur-[120px] pointer-events-none"></div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 relative z-10">
+                    <div class="reveal">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-neutral-400 mb-4">Get In Touch</p>
+                        <h2 class="text-4xl md:text-5xl font-semibold tracking-tighter text-white mb-8">
+                            Visit Us Today
+                        </h2>
+                        
+                        <div class="space-y-6 mb-8">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="map-pin" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-white">Location</p>
+                                    <p class="text-neutral-400">123 Mixology Lane, Downtown<br>New York, NY 10001</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="clock" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-white">Hours</p>
+                                    <p class="text-neutral-400">Mon - Thu: 4 PM - 12 AM<br>Fri - Sat: 4 PM - 2 AM<br>Sunday: 3 PM - 11 PM</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="phone" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-white">Contact</p>
+                                    <p class="text-neutral-400">(555) 123-4567<br>hello@elixir.com</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-4">
+                            <a href="#" class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                                <i data-lucide="instagram" class="w-5 h-5"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                                <i data-lucide="facebook" class="w-5 h-5"></i>
+                            </a>
+                            <a href="#" class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+                                <i data-lucide="twitter" class="w-5 h-5"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="reveal" style="transition-delay: 200ms;">
+                        <form id="contact-form" onsubmit="submitContact(event)" class="bg-white/10 backdrop-blur-xl rounded-3xl p-8">
+                            <h3 class="text-2xl font-bold text-white mb-6">Send a Message</h3>
+                            <div class="space-y-4">
+                                <input type="text" placeholder="Your Name" required class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-neutral-400 focus:ring-2 focus:ring-white/50 focus:border-transparent outline-none">
+                                <input type="email" placeholder="Your Email" required class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-neutral-400 focus:ring-2 focus:ring-white/50 focus:border-transparent outline-none">
+                                <textarea placeholder="Your Message" rows="4" required class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-neutral-400 focus:ring-2 focus:ring-white/50 focus:border-transparent outline-none resize-none"></textarea>
+                                <button type="submit" class="w-full bg-white text-neutral-900 py-4 rounded-full font-semibold hover:bg-neutral-100 transition-all hover:scale-105">
+                                    Send Message
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-[#111111] py-16 px-4 md:px-8">
+        <div class="max-w-[1800px] mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                        <i data-lucide="wine" class="w-5 h-5 text-neutral-900"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white tracking-tight">ELIXIR</span>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-6">
+                    <a href="#menu" class="text-neutral-400 hover:text-white transition-colors">Menu</a>
+                    <a href="#categories" class="text-neutral-400 hover:text-white transition-colors">Categories</a>
+                    <a href="#specials" class="text-neutral-400 hover:text-white transition-colors">Specials</a>
+                    <a href="#about" class="text-neutral-400 hover:text-white transition-colors">About</a>
+                    <a href="#contact" class="text-neutral-400 hover:text-white transition-colors">Contact</a>
+                </div>
+                
+                <button onclick="toggleReservation()" class="bg-white text-neutral-900 px-6 py-3 rounded-full text-sm font-semibold hover:bg-neutral-200 transition-colors">
+                    Reserve Table
+                </button>
+            </div>
+            
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-neutral-500 text-sm">© 2025 ELIXIR.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="text-neutral-500 hover:text-white text-sm transition-colors">Privacy Policy</a>
+                    <a href="#" class="text-neutral-500 hover:text-white text-sm transition-colors">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Cart Overlay -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="toggleCart()"></div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 right-8 bg-neutral-900 text-white px-6 py-4 rounded-2xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <div class="flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+            <span id="toast-message">Item added to cart</span>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Drink Data
+        const drinks = [
+            { id: 1, name: 'Classic Margarita', category: 'cocktails', price: 14, image: 'margarita', description: 'Tequila, lime, triple sec', rating: 4.9, featured: true },
+            { id: 2, name: 'Old Fashioned', category: 'cocktails', price: 16, image: 'old-fashioned', description: 'Bourbon, bitters, sugar', rating: 4.8, featured: true },
+            { id: 3, name: 'Espresso Martini', category: 'cocktails', price: 15, image: 'espresso-martini', description: 'Vodka, coffee, Kahlúa', rating: 4.9, featured: true },
+            { id: 4, name: 'Mojito', category: 'cocktails', price: 13, image: 'mojito', description: 'Rum, mint, lime, soda', rating: 4.7, featured: true },
+            { id: 5, name: 'Macallan 18', category: 'spirits', price: 45, image: 'whiskey-glass', description: 'Single malt Scotch', rating: 5.0 },
+            { id: 6, name: 'Grey Goose', category: 'spirits', price: 18, image: 'vodka-bottle', description: 'Premium French vodka', rating: 4.6 },
+            { id: 7, name: 'Don Julio 1942', category: 'spirits', price: 35, image: 'tequila-premium', description: 'Añejo tequila', rating: 4.9 },
+            { id: 8, name: 'Château Margaux', category: 'wine', price: 85, image: 'red-wine', description: 'Bordeaux red blend', rating: 5.0 },
+            { id: 9, name: 'Dom Pérignon', category: 'wine', price: 150, image: 'champagne', description: 'Vintage champagne', rating: 5.0 },
+            { id: 10, name: 'Sauvignon Blanc', category: 'wine', price: 12, image: 'white-wine', description: 'Crisp white wine', rating: 4.5 },
+            { id: 11, name: 'Craft IPA', category: 'beer', price: 8, image: 'ipa-beer', description: 'Hoppy craft beer', rating: 4.6 },
+            { id: 12, name: 'Stout Porter', category: 'beer', price: 9, image: 'dark-beer', description: 'Rich dark beer', rating: 4.7 },
+            { id: 13, name: 'No-Jito', category: 'mocktails', price: 8, image: 'mocktail-mint', description: 'Alcohol-free mojito', rating: 4.8 },
+            { id: 14, name: 'Virgin Colada', category: 'mocktails', price: 9, image: 'pina-colada', description: 'Coconut & pineapple', rating: 4.7 },
+            { id: 15, name: 'Iced Americano', category: 'coffee', price: 5, image: 'iced-coffee', description: 'Cold espresso delight', rating: 4.6 },
+            { id: 16, name: 'Caramel Latte', category: 'coffee', price: 6, image: 'latte-art', description: 'Espresso with caramel', rating: 4.8 },
+            { id: 17, name: 'Negroni', category: 'cocktails', price: 15, image: 'negroni', description: 'Gin, vermouth, Campari', rating: 4.8 },
+            { id: 18, name: 'Whiskey Sour', category: 'cocktails', price: 14, image: 'whiskey-sour', description: 'Bourbon, lemon, egg white', rating: 4.7 },
+            { id: 19, name: 'Cosmopolitan', category: 'cocktails', price: 14, image: 'cosmo', description: 'Vodka, cranberry, lime', rating: 4.6 },
+            { id: 20, name: 'Moscow Mule', category: 'cocktails', price: 13, image: 'moscow-mule', description: 'Vodka, ginger beer, lime', rating: 4.7 },
+        ];
+        
+        // Cart State
+        let cart = [];
+        let currentCategory = 'all';
+        
+        // Render Featured Drinks
+        function renderFeaturedDrinks() {
+            const container = document.getElementById('featured-drinks');
+            const featured = drinks.filter(d => d.featured);
+            container.innerHTML = featured.map(drink => createDrinkCard(drink, true)).join('');
+            lucide.createIcons();
+        }
+        
+        // Render Menu Grid
+        function renderMenuGrid(category = 'all') {
+            const container = document.getElementById('menu-grid');
+            const filtered = category === 'all' ? drinks : drinks.filter(d => d.category === category);
+            container.innerHTML = filtered.map(drink => createDrinkCard(drink)).join('');
+            lucide.createIcons();
+        }
+        
+        // Create Drink Card
+        function createDrinkCard(drink, isFeatured = false) {
+            return `
+                <div class="drink-card group bg-white border border-neutral-200 rounded-3xl overflow-hidden hover:shadow-xl transition-all duration-500">
+                    <div class="relative h-48 md:h-56 overflow-hidden">
+                        <img src="https://picsum.photos/seed/${drink.image}/400/400" alt="${drink.name}" class="drink-image w-full h-full object-cover transition-transform duration-700">
+                        <div class="drink-overlay absolute inset-0 bg-black/40 opacity-0 transition-opacity duration-300 flex items-center justify-center">
+                            <button onclick="addToCart(${drink.id})" class="bg-white text-neutral-900 px-6 py-3 rounded-full font-semibold hover:bg-neutral-100 transition-all transform scale-90 group-hover:scale-100">
+                                Add to Cart
+                            </button>
+                        </div>
+                        ${drink.featured ? '<div class="absolute top-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold">Featured</div>' : ''}
+                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                            <i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>
+                            ${drink.rating}
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg tracking-tight">${drink.name}</h3>
+                            <span class="font-mono text-lg font-bold">$${drink.price}</span>
+                        </div>
+                        <p class="text-sm text-neutral-500 mb-4">${drink.description}</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-medium uppercase tracking-wider text-neutral-400 bg-neutral-100 px-3 py-1 rounded-full">${drink.category}</span>
+                            <button onclick="addToCart(${drink.id})" class="text-sm font-semibold text-neutral-900 hover:text-neutral-600 flex items-center gap-1 transition-colors">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Add to Cart
+        function addToCart(id) {
+            const drink = drinks.find(d => d.id === id);
+            const existing = cart.find(item => item.id === id);
+            
+            if (existing) {
+                existing.quantity++;
+            } else {
+                cart.push({ ...drink, quantity: 1 });
+            }
+            
+            updateCart();
+            showToast(`${drink.name} added to cart`);
+        }
+        
+        // Remove from Cart
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCart();
+        }
+        
+        // Update Quantity
+        function updateQuantity(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    removeFromCart(id);
+                } else {
+                    updateCart();
+                }
+            }
+        }
+        
+        // Update Cart UI
+        function updateCart() {
+            const countEl = document.getElementById('cart-count');
+            const itemsEl = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total');
+            
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            if (totalItems > 0) {
+                countEl.classList.remove('hidden');
+                countEl.textContent = totalItems;
+            } else {
+                countEl.classList.add('hidden');
+            }
+            
+            if (cart.length === 0) {
+                itemsEl.innerHTML = '<p class="text-neutral-500 text-center py-8">Your cart is empty</p>';
+            } else {
+                itemsEl.innerHTML = cart.map(item => `
+                    <div class="flex gap-4 mb-4 pb-4 border-b border-neutral-100">
+                        <img src="https://picsum.photos/seed/${item.image}/100/100" alt="${item.name}" class="w-16 h-16 rounded-xl object-cover">
+                        <div class="flex-1">
+                            <h4 class="font-semibold">${item.name}</h4>
+                            <p class="text-sm text-neutral-500">$${item.price}</p>
+                            <div class="flex items-center gap-3 mt-2">
+                                <button onclick="updateQuantity(${item.id}, -1)" class="w-8 h-8 border rounded-full flex items-center justify-center hover:bg-neutral-100">-</button>
+                                <span class="font-semibold">${item.quantity}</span>
+                                <button onclick="updateQuantity(${item.id}, 1)" class="w-8 h-8 border rounded-full flex items-center justify-center hover:bg-neutral-100">+</button>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart(${item.id})" class="text-neutral-400 hover:text-red-500">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+            
+            totalEl.textContent = `$${totalPrice.toFixed(2)}`;
+            lucide.createIcons();
+        }
+        
+        // Filter by Category
+        function filterByCategory(category) {
+            currentCategory = category;
+            
+            // Update tabs
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.toLowerCase().includes(category) || (category === 'all' && tab.textContent.includes('All'))) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            renderMenuGrid(category);
+            
+            // Scroll to menu
+            document.getElementById('menu').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Search Drinks
+        function searchDrinks(query) {
+            const resultsEl = document.getElementById('search-results');
+            
+            if (query.length < 2) {
+                resultsEl.innerHTML = '<p class="text-neutral-500 text-center py-8">Type to search for drinks...</p>';
+                return;
+            }
+            
+            const results = drinks.filter(d => 
+                d.name.toLowerCase().includes(query.toLowerCase()) ||
+                d.category.toLowerCase().includes(query.toLowerCase()) ||
+                d.description.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            if (results.length === 0) {
+                resultsEl.innerHTML = '<p class="text-neutral-500 text-center py-8">No drinks found</p>';
+            } else {
+                resultsEl.innerHTML = results.map(drink => `
+                    <div class="flex items-center gap-4 p-4 hover:bg-neutral-50 rounded-xl cursor-pointer transition-colors" onclick="addToCart(${drink.id}); toggleSearch();">
+                        <img src="https://picsum.photos/seed/${drink.image}/100/100" alt="${drink.name}" class="w-12 h-12 rounded-xl object-cover">
+                        <div class="flex-1">
+                            <h4 class="font-semibold">${drink.name}</h4>
+                            <p class="text-sm text-neutral-500">${drink.description}</p>
+                        </div>
+                        <span class="font-bold">$${drink.price}</span>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Toggle Functions
+        function toggleSearch() {
+            const modal = document.getElementById('search-modal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('visible');
+            if (!modal.classList.contains('hidden')) {
+                document.getElementById('search-input').focus();
+            }
+        }
+        
+        function toggleCart() {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+            const isOpen = !sidebar.classList.contains('translate-x-full');
+            
+            if (isOpen) {
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+            }
+        }
+        
+        function toggleReservation() {
+            const modal = document.getElementById('reservation-modal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('visible');
+        }
+        
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+        
+        // Form Submissions
+        function submitReservation(e) {
+            e.preventDefault();
+            toggleReservation();
+            showToast('Reservation confirmed! See you soon.');
+        }
+        
+        function submitContact(e) {
+            e.preventDefault();
+            e.target.reset();
+            showToast('Message sent successfully!');
+        }
+        
+        function checkout() {
+            if (cart.length === 0) {
+                showToast('Your cart is empty');
+                return;
+            }
+            toggleCart();
+            showToast('Order placed successfully!');
+            cart = [];
+            updateCart();
+        }
+        
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const messageEl = document.getElementById('toast-message');
+            messageEl.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+        
+        // Scroll Reveal
+        function reveal() {
+            const reveals = document.querySelectorAll('.reveal');
+            reveals.forEach(el => {
+                const windowHeight = window.innerHeight;
+                const elementTop = el.getBoundingClientRect().top;
+                const elementVisible = 50;
+                
+                if (elementTop < windowHeight - elementVisible) {
+                    el.classList.add('active');
+                }
+            });
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFeaturedDrinks();
+            renderMenuGrid();
+            reveal();
+        });
+        
+        window.addEventListener('scroll', reveal);
+        
+        // Close modals on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('search-modal').classList.add('hidden');
+                document.getElementById('reservation-modal').classList.add('hidden');
+                if (!document.getElementById('cart-sidebar').classList.contains('translate-x-full')) {
+                    toggleCart();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
